@@ -1,2 +1,1 @@
-# pinot-client-node
-Node.js client for Apache Pinot
+# Apache Pinot client for Node.js
