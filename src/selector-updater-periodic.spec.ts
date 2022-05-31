@@ -1,6 +1,6 @@
 import { mock, mockReset } from "jest-mock-extended";
 import { Updatable } from "./updater.interface";
-import { SelectorUpdaterPeriodic } from "./selector-updater-perioduc";
+import { SelectorUpdaterPeriodic } from "./selector-updater-periodic";
 
 const sleep = (ms: number) =>
     new Promise<void>((resolve) => {

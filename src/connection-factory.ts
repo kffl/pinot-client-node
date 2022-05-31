@@ -4,7 +4,7 @@ import { JsonBrokerClientTransport } from "./json-broker-client-transport";
 import axios from "axios";
 import { JsonControllerClientTransport } from "./json-controller-client-transport";
 import { ControllerBasedBrokerSelector } from "./controller-based-broker-selector";
-import { SelectorUpdaterPeriodic } from "./selector-updater-perioduc";
+import { SelectorUpdaterPeriodic } from "./selector-updater-periodic";
 
 /**
  * Creates a connection to a Pinot cluster given its Controller URL.
