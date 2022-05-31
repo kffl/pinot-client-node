@@ -12,7 +12,4 @@ export class SimpleBrokerSelector implements BrokerSelector {
     public selectBroker(_: string) {
         return this.brokers[Math.floor(Math.random() * this.brokers.length)];
     }
-    public close() {
-        return Promise.resolve();
-    }
 }

@@ -2,14 +2,24 @@ import { BrokerSelector } from "./broker-selector.interface";
 import { BrokerClientTransport } from "./broker-client-transport.interface";
 import { BrokerResponse } from "./broker-response.types";
 import { PinotClientError } from "./pinot-client-error";
+import { Scheduler } from "./scheduler.interface";
 
 /**
  * A connection to Pinot, normally created via connectionFactory
  */
 export class Connection {
-    constructor(private readonly brokerSelector: BrokerSelector, private readonly transport: BrokerClientTransport) {}
+    private scheduler?: Scheduler;
+    constructor(
+        private readonly brokerSelector: BrokerSelector,
+        private readonly transport: BrokerClientTransport,
+        scheduler: Scheduler = null
+    ) {
+        this.scheduler = scheduler;
+    }
     public close() {
-        return this.brokerSelector.close();
+        if (this.scheduler) {
+            this.scheduler.stop();
+        }
     }
     /**
      * Get the list of available broker addresses

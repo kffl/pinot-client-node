@@ -3,6 +3,7 @@ import { BrokerSelector } from "./broker-selector.interface";
 import { Connection } from "./connection";
 import { mock, mockReset } from "jest-mock-extended";
 import { BrokerResponse } from "./broker-response.types";
+import { Scheduler } from "./scheduler.interface";
 
 const brokers = ["host1:8000", "host2:8000"];
 
@@ -22,11 +23,11 @@ describe("Connection class", () => {
         });
     });
     describe("close method", () => {
-        it("closes the broker selector", async () => {
-            mockSelector.close.mockResolvedValue(null);
-            const c = new Connection(mockSelector, mockTransport);
-            await c.close();
-            expect(mockSelector.close).toHaveBeenCalledTimes(1);
+        it("closes the scheduler selector", async () => {
+            const mockScheduler = mock<Scheduler>();
+            const c = new Connection(mockSelector, mockTransport, mockScheduler);
+            c.close();
+            expect(mockScheduler.stop).toHaveBeenCalledTimes(1);
         });
     });
     describe("execute method", () => {
