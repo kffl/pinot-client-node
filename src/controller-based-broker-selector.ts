@@ -29,7 +29,7 @@ export class ControllerBasedBrokerSelector implements BrokerSelector, Updatable 
         try {
             this.tableToBrokersMap = extractBrokers(await this.transport.getTableToBrokerMapping());
         } catch (e) {
-            console.warn("An error occurred when refreshing broker list via controller API: " + e?.message);
+            console.warn("An error occurred when refreshing broker list via controller API: " + e.message);
         }
     }
 }

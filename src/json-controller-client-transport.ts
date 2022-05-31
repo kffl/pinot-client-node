@@ -24,10 +24,10 @@ export class JsonControllerClientTransport implements ControllerClientTransport 
             );
             return data;
         } catch (e) {
-            if (e?.response) {
-                throw new PinotClientError("Controller responded with HTTP status code: " + e.response?.status);
+            if (e.response) {
+                throw new PinotClientError("Controller responded with HTTP status code: " + e.response.status);
             } else {
-                throw new PinotClientError("An error occurred when sending request to the controller: " + e?.message);
+                throw new PinotClientError("An error occurred when sending request to the controller: " + e.message);
             }
         }
     }
