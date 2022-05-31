@@ -27,7 +27,7 @@ async function fromController(controllerAddress: string): Promise<Connection> {
  * @param brokerAddresses array of Pinot broker URLs
  * @returns Connection object with a simple (random) broker selector
  */
-async function fromHostList(brokerAddresses: string[]): Promise<Connection> {
+function fromHostList(brokerAddresses: string[]): Connection {
     const brokerSelector = new SimpleBrokerSelector(brokerAddresses);
     const transport = new JsonBrokerClientTransport(axios.post);
     return new Connection(brokerSelector, transport);

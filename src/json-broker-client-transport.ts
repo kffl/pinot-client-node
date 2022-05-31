@@ -28,7 +28,7 @@ export class JsonBrokerClientTransport implements BrokerClientTransport {
                 throw new PinotClientError("An error occurred when sending request to the broker: " + e.message);
             }
             if (e?.response) {
-                throw new PinotClientError("Broker responded with HTTP status code: " + e.response?.status);
+                throw new PinotClientError("Broker responded with HTTP status code: " + e.response.status);
             }
             if (e?.message) {
                 throw new PinotClientError(
