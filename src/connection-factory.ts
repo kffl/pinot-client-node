@@ -4,7 +4,7 @@ import { JsonBrokerClientTransport } from "./json-broker-client-transport";
 import axios from "axios";
 import { JsonControllerClientTransport } from "./json-controller-client-transport";
 import { ControllerBasedBrokerSelector } from "./controller-based-broker-selector";
-import { SelectorScheduler } from "./selector-scheduler";
+import { SelectorUpdaterPeriodic } from "./selector-updater-perioduc";
 
 /**
  * Creates a connection to a Pinot cluster given its Controller URL.
@@ -17,7 +17,7 @@ async function fromController(controllerAddress: string): Promise<Connection> {
     const controllerTransport = new JsonControllerClientTransport(controllerAddress, axios.get);
     const brokerSelector = new ControllerBasedBrokerSelector(controllerTransport);
     await brokerSelector.setup();
-    const scheduler = new SelectorScheduler(brokerSelector, 1000);
+    const scheduler = new SelectorUpdaterPeriodic(brokerSelector, 1000);
     const brokerTransport = new JsonBrokerClientTransport(axios.post);
     return new Connection(brokerSelector, brokerTransport, scheduler);
 }

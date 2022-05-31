@@ -1,6 +1,6 @@
-import { Scheduler, Updatable } from "./scheduler.interface";
+import { Updater, Updatable } from "./updater.interface";
 
-export class SelectorScheduler implements Scheduler {
+export class SelectorUpdaterPeriodic implements Updater {
     private timer: ReturnType<typeof setTimeout>;
     constructor(private readonly target: Updatable, private readonly frequency: number) {
         this.timer = setTimeout(this.performUpdate.bind(this), this.frequency);

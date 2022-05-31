@@ -2,17 +2,17 @@ import { BrokerSelector } from "./broker-selector.interface";
 import { BrokerClientTransport } from "./broker-client-transport.interface";
 import { BrokerResponse } from "./broker-response.types";
 import { PinotClientError } from "./pinot-client-error";
-import { Scheduler } from "./scheduler.interface";
+import { Updater } from "./updater.interface";
 
 /**
  * A connection to Pinot, normally created via connectionFactory
  */
 export class Connection {
-    private scheduler?: Scheduler;
+    private scheduler?: Updater;
     constructor(
         private readonly brokerSelector: BrokerSelector,
         private readonly transport: BrokerClientTransport,
-        scheduler: Scheduler = null
+        scheduler: Updater = null
     ) {
         this.scheduler = scheduler;
     }

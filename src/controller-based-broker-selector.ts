@@ -1,7 +1,7 @@
 import { BrokerSelector } from "./broker-selector.interface";
 import { ControllerClientTransport } from "./controller-client-transport.interface";
 import { extractBrokers } from "./controller-response";
-import { Updatable } from "./scheduler.interface";
+import { Updatable } from "./updater.interface";
 
 export class ControllerBasedBrokerSelector implements BrokerSelector, Updatable {
     private tableToBrokersMap: Record<string, string[]>;

@@ -2,6 +2,6 @@ export interface Updatable {
     updateBrokers: () => Promise<void>;
 }
 
-export interface Scheduler {
+export interface Updater {
     stop: () => void;
 }

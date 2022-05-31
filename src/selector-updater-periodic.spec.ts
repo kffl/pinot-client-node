@@ -1,6 +1,6 @@
 import { mock, mockReset } from "jest-mock-extended";
-import { Updatable } from "./scheduler.interface";
-import { SelectorScheduler } from "./selector-scheduler";
+import { Updatable } from "./updater.interface";
+import { SelectorUpdaterPeriodic } from "./selector-updater-perioduc";
 
 const sleep = (ms: number) =>
     new Promise<void>((resolve) => {
@@ -17,13 +17,13 @@ beforeEach(() => {
 
 describe("SelectorScheduler class", () => {
     it("should periodically invoke .performUpdate() on Updatable", async () => {
-        const scheduler = new SelectorScheduler(mockUpdatable, 100);
+        const scheduler = new SelectorUpdaterPeriodic(mockUpdatable, 100);
         await sleep(250);
         scheduler.stop();
         expect(mockUpdatable.updateBrokers).toHaveBeenCalledTimes(2);
     });
     it("should stop invoking .performUpdate() after .stop() is called", async () => {
-        const scheduler = new SelectorScheduler(mockUpdatable, 100);
+        const scheduler = new SelectorUpdaterPeriodic(mockUpdatable, 100);
         await sleep(150);
         scheduler.stop();
         await sleep(100);
