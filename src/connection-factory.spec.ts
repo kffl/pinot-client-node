@@ -62,7 +62,7 @@ describe("ConnectionFactory", () => {
             controllerHandler.mockImplementationOnce(() => {
                 throw new Error("Server-side error");
             });
-            await expect(ConnectionFactory.fromController("localhost:9000")).rejects.toThrowError("status code 500");
+            await expect(ConnectionFactory.fromController("localhost:9000")).rejects.toThrowError("status code: 500");
         });
     });
     describe("fromHostList method", () => {
