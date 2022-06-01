@@ -56,7 +56,7 @@ const connection = await ConnectionFactory.fromController("localhost:9000");
 ### Querying Pinot
 
 ```typescript
-const response = await connection.execute(
+const r = await connection.execute(
     "baseballStats", // table name
     "select league, sum(hits) as hits from baseballStats group by league order by hits desc" // SQL query
 );
