@@ -18,6 +18,9 @@ export class Connection {
     ) {
         this.updater = updater;
     }
+    /**
+     * Closes a Pinot cluster connection (stop the periodic table-to-broker mapping refreshes)
+     */
     public close() {
         this.logger.info("Closing Pinot connection");
         if (this.updater) {

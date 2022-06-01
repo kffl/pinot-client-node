@@ -8,7 +8,7 @@ import { SelectorUpdaterPeriodic } from "./selector-updater-periodic";
 import { Logger } from "./logger.interface";
 import { dummyLogger } from "./dummy-logger";
 
-type FromHostListOptions = {
+export type FromHostListOptions = {
     /**
      * Logger instance conforming to the standard Log4j interface w/ .child() method (i.e. pino, winston or log4js)
      */
@@ -79,6 +79,9 @@ function fromHostList(brokerAddresses: string[], options: Partial<FromHostListOp
     return new Connection(brokerSelector, transport, actualOptions.logger);
 }
 
+/**
+ * Creates Pinot cluster connections via the initialization methods that it exposes.
+ */
 export const ConnectionFactory = {
     fromController,
     fromHostList,
