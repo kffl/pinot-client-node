@@ -10,7 +10,8 @@ JavaScript client library for connecting to and querying Apache Pinot :wine_glas
 ## Features
 
 -   Implements a controller-based broker selector that periodically updates the table-to-broker mapping via the controller API.
--   Has 99% test coverage.
+-   Provides TypeScript definitions of broker responses (Pinot query results).
+-   Has 100% test coverage.
 
 ## Quick start
 
@@ -81,4 +82,50 @@ NA      24549
 FL      21105
 PL      10523
 UA      7457
+```
+
+## Usage
+
+### `fromHostList()` and `fromController()` options
+
+`ConnectionFactory#fromHostList()` may optionally take as a second parameter an object with the following keys:
+
+-   `logger`: a logger instance conforming to the standard Log4j interface w/ .child() method (i.e. pino, winston or log4js)
+-   `brokerReqHeaders`: additional HTTP headers (object key: value) to include in broker query API requests
+
+additionally, `ConnectionFactory#fromController()` options may include two additional keys:
+
+-   `controllerReqHeaders`: additional HTTP headers (object key: value) to include in controller API requests
+-   `brokerUpdateFreqMs`: wait time in milliseconds between table-to-broker mapping refreshes
+
+Example usage:
+
+```typescript
+const options = {
+    brokerReqHeaders: {
+        Authorization: "Basic asdf123",
+    },
+    controllerReqHeaders: {
+        Authorization: "Basic xyz123",
+    },
+    brokerUpdateFreqMs: 500,
+};
+
+const connection = await ConnectionFactory.fromController("localhost:9000", options);
+```
+
+### Using a custom logger
+
+```typescript
+// let's use pino (not to be confused with pinot) as an example logger
+import * as pino from "pino";
+
+const pinoInstance = pino({ level: "debug" });
+const childLogger = pinoInstance.child({ lib: "pinot-client" });
+
+const options = {
+    logger: childLogger,
+};
+
+const connection = await ConnectionFactory.fromController("localhost:9000", options);
 ```
