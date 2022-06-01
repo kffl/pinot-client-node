@@ -11,13 +11,18 @@ export type HttpGetFn<T> = (
 ) => Promise<{ data: T; status: number }>;
 
 export class JsonControllerClientTransport implements ControllerClientTransport {
-    constructor(private readonly controllerAddress: string, private readonly httpGet: HttpGetFn<ControllerResponse>) {}
+    constructor(
+        private readonly controllerAddress: string,
+        private readonly httpGet: HttpGetFn<ControllerResponse>,
+        private readonly reqHeaders: Record<string, string>
+    ) {}
     public async getTableToBrokerMapping() {
         try {
             const { data } = await this.httpGet(
                 withProtocol(this.controllerAddress) + "/v2/brokers/tables?state=ONLINE",
                 {
                     headers: {
+                        ...this.reqHeaders,
                         "Content-Type": "application/json; charset=utf-8",
                     },
                 }

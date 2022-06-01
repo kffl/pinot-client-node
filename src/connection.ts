@@ -9,19 +9,19 @@ import { Logger } from "./logger.interface";
  * A connection to Pinot, normally created via connectionFactory
  */
 export class Connection {
-    private scheduler?: Updater;
+    private updater?: Updater;
     constructor(
         private readonly brokerSelector: BrokerSelector,
         private readonly transport: BrokerClientTransport,
         private readonly logger: Logger,
-        scheduler: Updater = null
+        updater: Updater = null
     ) {
-        this.scheduler = scheduler;
+        this.updater = updater;
     }
     public close() {
         this.logger.info("Closing Pinot connection");
-        if (this.scheduler) {
-            this.scheduler.stop();
+        if (this.updater) {
+            this.updater.stop();
         }
     }
     /**

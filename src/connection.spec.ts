@@ -24,7 +24,7 @@ describe("Connection class", () => {
         });
     });
     describe("close method", () => {
-        it("closes the scheduler selector", async () => {
+        it("closes the selector updater", async () => {
             const mockUpdater = mock<Updater>();
             const c = new Connection(mockSelector, mockTransport, dummyLogger, mockUpdater);
             c.close();

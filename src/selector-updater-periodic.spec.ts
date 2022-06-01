@@ -15,17 +15,17 @@ beforeEach(() => {
     mockReset(mockUpdatable);
 });
 
-describe("SelectorScheduler class", () => {
+describe("SelectorUpdaterPeriodic class", () => {
     it("should periodically invoke .performUpdate() on Updatable", async () => {
-        const scheduler = new SelectorUpdaterPeriodic(mockUpdatable, 100);
+        const updater = new SelectorUpdaterPeriodic(mockUpdatable, 100);
         await sleep(250);
-        scheduler.stop();
+        updater.stop();
         expect(mockUpdatable.updateBrokers).toHaveBeenCalledTimes(2);
     });
     it("should stop invoking .performUpdate() after .stop() is called", async () => {
-        const scheduler = new SelectorUpdaterPeriodic(mockUpdatable, 100);
+        const updater = new SelectorUpdaterPeriodic(mockUpdatable, 100);
         await sleep(150);
-        scheduler.stop();
+        updater.stop();
         await sleep(100);
         expect(mockUpdatable.updateBrokers).toHaveBeenCalledTimes(1);
     });
