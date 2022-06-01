@@ -1,6 +1,7 @@
 import { mock, mockReset } from "jest-mock-extended";
 import { ControllerBasedBrokerSelector } from "./controller-based-broker-selector";
 import { ControllerClientTransport } from "./controller-client-transport.interface";
+import { Logger } from "./logger.interface";
 
 const tableMapping1 = {
     table1: [
@@ -63,6 +64,16 @@ describe("ControllerBasedBrokerSelector class", () => {
             mockTransport.getTableToBrokerMapping.mockResolvedValueOnce(tableMapping2);
             await s.updateBrokers();
             expect(s.getBrokers()).toEqual(["h2:8000", "h3:8000"]);
+        });
+        it("should log an error if broker cache update fails", async () => {
+            mockTransport.getTableToBrokerMapping.mockResolvedValueOnce(tableMapping1);
+            const mockLogger = mock<Logger>();
+            const s = new ControllerBasedBrokerSelector(mockTransport, mockLogger);
+            await s.setup();
+            expect(s.getBrokers()).toEqual(["h1:8000"]);
+            mockTransport.getTableToBrokerMapping.mockRejectedValueOnce(new Error("fail"));
+            await s.updateBrokers();
+            expect(mockLogger.warn).toHaveBeenCalledTimes(1);
         });
     });
 });

@@ -3,6 +3,7 @@ import { BrokerClientTransport } from "./broker-client-transport.interface";
 import { BrokerResponse } from "./broker-response.types";
 import { PinotClientError } from "./pinot-client-error";
 import { Updater } from "./updater.interface";
+import { Logger } from "./logger.interface";
 
 /**
  * A connection to Pinot, normally created via connectionFactory
@@ -12,11 +13,13 @@ export class Connection {
     constructor(
         private readonly brokerSelector: BrokerSelector,
         private readonly transport: BrokerClientTransport,
+        private readonly logger: Logger,
         scheduler: Updater = null
     ) {
         this.scheduler = scheduler;
     }
     public close() {
+        this.logger.info("Closing Pinot connection");
         if (this.scheduler) {
             this.scheduler.stop();
         }
