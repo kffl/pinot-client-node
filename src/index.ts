@@ -1,3 +1,3 @@
 export { Connection } from "./connection";
-export { ConnectionFactory } from "./connection-factory";
+export { ConnectionFactory, FromHostListOptions, FromControllerOptions } from "./connection-factory";
 export * from "./broker-response.types";
