@@ -3,16 +3,19 @@ import { ConnectionFactory } from "./connection-factory";
 
 describe("ConnectionFactory", () => {
     let brokerTestServer;
-    const brokerHandler = jest.fn();
+    const brokerHandlerBody = jest.fn();
+    const brokerHandlerHeaders = jest.fn();
     let controllerTestServer;
-    const controllerHandler = jest.fn();
+    const controllerHandlerHeaders = jest.fn();
 
     beforeEach(async () => {
-        brokerHandler.mockClear();
-        controllerHandler.mockClear();
+        brokerHandlerBody.mockClear();
+        brokerHandlerHeaders.mockClear();
+        controllerHandlerHeaders.mockClear();
         brokerTestServer = fastify();
         brokerTestServer.post("/query/sql", (req, res) => {
-            brokerHandler(req.body);
+            brokerHandlerBody(req.body);
+            brokerHandlerHeaders(req.headers);
             const r = Buffer.from(
                 `{"resultTable":{"dataSchema":{"columnNames":["league","hits"],"columnDataTypes":["STRING","DOUBLE"]},"rows":[["NL",1890198.0],["AL",1650039.0],["AA",88730.0],["NA",24549.0],["FL",21105.0],["PL",10523.0],["UA",7457.0]]},"exceptions":[],"numServersQueried":1,"numServersResponded":1,"numSegmentsQueried":1,"numSegmentsProcessed":1,"numSegmentsMatched":1,"numConsumingSegmentsQueried":0,"numDocsScanned":97889,"numEntriesScannedInFilter":0,"numEntriesScannedPostFilter":195778,"numGroupsLimitReached":false,"totalDocs":97889,"timeUsedMs":12,"offlineThreadCpuTimeNs":0,"realtimeThreadCpuTimeNs":0,"segmentStatistics":[],"traceInfo":{},"minConsumingFreshnessTimeMs":0,"numRowsResultSet":7}`
             );
@@ -22,7 +25,7 @@ describe("ConnectionFactory", () => {
 
         controllerTestServer = fastify();
         controllerTestServer.get("/v2/brokers/tables", (req, res) => {
-            controllerHandler();
+            controllerHandlerHeaders(req.headers);
             const r = Buffer.from(
                 `{"baseballStats":[{"port":8000,"host":"localhost","instanceName":"Broker_172.17.0.2_8000"}]}`
             );
@@ -40,7 +43,18 @@ describe("ConnectionFactory", () => {
         it("should query the controller API when initialized via fromController", async () => {
             const c = await ConnectionFactory.fromController("localhost:9000");
             c.close();
-            expect(controllerHandler).toHaveBeenCalledTimes(1);
+            expect(controllerHandlerHeaders).toHaveBeenCalledTimes(1);
+        });
+
+        it("should query the controller API with extra HTTP headers when specified in the options", async () => {
+            const c = await ConnectionFactory.fromController("localhost:9000", {
+                controllerReqHeaders: {
+                    key: "value",
+                },
+            });
+            c.close();
+            expect(controllerHandlerHeaders).toHaveBeenCalledTimes(1);
+            expect(controllerHandlerHeaders.mock.calls[0][0]["key"]).toEqual("value");
         });
 
         it("should allow for performing a query against a broker without errors", async () => {
@@ -49,8 +63,8 @@ describe("ConnectionFactory", () => {
                 "baseballStats",
                 "select league, sum(hits) as hits from baseballStats group by league order by hits desc"
             );
-            expect(brokerHandler).toHaveBeenCalledTimes(1);
-            expect(brokerHandler).toHaveBeenCalledWith({
+            expect(brokerHandlerBody).toHaveBeenCalledTimes(1);
+            expect(brokerHandlerBody).toHaveBeenCalledWith({
                 sql: "select league, sum(hits) as hits from baseballStats group by league order by hits desc",
             });
             expect(r.exceptions).toHaveLength(0);
@@ -59,7 +73,7 @@ describe("ConnectionFactory", () => {
         });
 
         it("should throw an error if the initial controller request fails", async () => {
-            controllerHandler.mockImplementationOnce(() => {
+            controllerHandlerHeaders.mockImplementationOnce(() => {
                 throw new Error("Server-side error");
             });
             await expect(ConnectionFactory.fromController("localhost:9000")).rejects.toThrowError("status code: 500");
@@ -75,12 +89,23 @@ describe("ConnectionFactory", () => {
                 "baseballStats",
                 "select league, sum(hits) as hits from baseballStats group by league order by hits desc"
             );
-            expect(brokerHandler).toHaveBeenCalledTimes(1);
-            expect(brokerHandler).toHaveBeenCalledWith({
+            expect(brokerHandlerBody).toHaveBeenCalledTimes(1);
+            expect(brokerHandlerBody).toHaveBeenCalledWith({
                 sql: "select league, sum(hits) as hits from baseballStats group by league order by hits desc",
             });
             expect(r.exceptions).toHaveLength(0);
             expect(r.resultTable.dataSchema.columnDataTypes).toHaveLength(2);
+        });
+        it("should add HTTP headers to broker requests if specified", async () => {
+            const c = ConnectionFactory.fromHostList(["localhost:8000"], {
+                brokerReqHeaders: { "custom-header": "custom-value" },
+            });
+            const r = await c.execute(
+                "baseballStats",
+                "select league, sum(hits) as hits from baseballStats group by league order by hits desc"
+            );
+            expect(brokerHandlerHeaders).toHaveBeenCalledTimes(1);
+            expect(brokerHandlerHeaders.mock.calls[0][0]["custom-header"]).toEqual("custom-value");
         });
     });
 });

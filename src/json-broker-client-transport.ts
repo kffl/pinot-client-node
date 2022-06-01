@@ -12,13 +12,17 @@ export type HttpPostFn<T> = (
 ) => Promise<{ data: T; status: number }>;
 
 export class JsonBrokerClientTransport implements BrokerClientTransport {
-    constructor(private readonly httpPost: HttpPostFn<BrokerResponse>) {}
+    constructor(
+        private readonly httpPost: HttpPostFn<BrokerResponse>,
+        private readonly reqHeaders: Record<string, string>
+    ) {}
     public async executeQuery(brokerAddress: string, query: string) {
         try {
             const url = withProtocol(brokerAddress) + "/query/sql";
             const body = { sql: query };
             const { data } = await this.httpPost(url, body, {
                 headers: {
+                    ...this.reqHeaders,
                     "Content-Type": "application/json; charset=utf-8",
                 },
             });
