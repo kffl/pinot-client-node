@@ -6,6 +6,7 @@
         "outDir": "./dist"
     },
     "include": ["src/**/*"],
+    "exclude": ["**/*.spec.ts"],
     "typeAcquisition": {
         "include": ["jest"]
     }

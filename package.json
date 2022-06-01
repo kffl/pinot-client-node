@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "description": "Node.js client for Apache Pinot",
     "main": "dist/index.js",
+    "types": "dist/index.d.js",
     "scripts": {
         "build": "tsc",
         "test": "jest --coverage src",
