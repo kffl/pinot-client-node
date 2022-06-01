@@ -22,7 +22,7 @@ jobs:
         run: npx typedoc src/index.ts
 
       - name: Deploy typedoc
-        uses: JamesIves/github-pages-deploy-action@4.3.3
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages
           folder: docs
