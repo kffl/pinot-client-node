@@ -73,7 +73,7 @@ r.resultTable.rows.forEach((row) => {
 Output:
 
 ```
-Scanned 97889 in 8ms
+Scanned 97889 docs in 8ms
 league  hits
 NL      1890198
 AL      1650039
@@ -88,12 +88,12 @@ UA      7457
 
 ### `fromHostList()` and `fromController()` options
 
-`ConnectionFactory#fromHostList()` may optionally take as a second parameter an object with the following keys:
+`ConnectionFactory.fromHostList()` may optionally take as a second parameter an object with the following keys:
 
 -   `logger`: a logger instance conforming to the standard Log4j interface w/ .child() method (i.e. pino, winston or log4js)
 -   `brokerReqHeaders`: additional HTTP headers (object key: value) to include in broker query API requests
 
-additionally, `ConnectionFactory#fromController()` options may include two additional keys:
+on top of that, `ConnectionFactory.fromController()` options may include two additional keys:
 
 -   `controllerReqHeaders`: additional HTTP headers (object key: value) to include in controller API requests
 -   `brokerUpdateFreqMs`: wait time in milliseconds between table-to-broker mapping refreshes
