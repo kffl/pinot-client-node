@@ -1,5 +1,7 @@
 import fastify from "fastify";
+import { mock } from "jest-mock-extended";
 import { ConnectionFactory } from "./connection-factory";
+import { HttpClient } from "./http-client.interface";
 
 describe("ConnectionFactory", () => {
     let brokerTestServer;
@@ -8,11 +10,8 @@ describe("ConnectionFactory", () => {
     let controllerTestServer;
     const controllerHandlerHeaders = jest.fn();
 
-    beforeEach(async () => {
-        brokerHandlerBody.mockClear();
-        brokerHandlerHeaders.mockClear();
-        controllerHandlerHeaders.mockClear();
-        brokerTestServer = fastify();
+    beforeAll(async () => {
+        brokerTestServer = fastify({ forceCloseConnections: true });
         brokerTestServer.post("/query/sql", (req, res) => {
             brokerHandlerBody(req.body);
             brokerHandlerHeaders(req.headers);
@@ -23,7 +22,7 @@ describe("ConnectionFactory", () => {
         });
         await brokerTestServer.listen(8000, "0.0.0.0");
 
-        controllerTestServer = fastify();
+        controllerTestServer = fastify({ forceCloseConnections: true });
         controllerTestServer.get("/v2/brokers/tables", (req, res) => {
             controllerHandlerHeaders(req.headers);
             const r = Buffer.from(
@@ -34,9 +33,15 @@ describe("ConnectionFactory", () => {
         await controllerTestServer.listen(9000, "0.0.0.0");
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await brokerTestServer.close();
         await controllerTestServer.close();
+    });
+
+    beforeEach(async () => {
+        brokerHandlerBody.mockClear();
+        brokerHandlerHeaders.mockClear();
+        controllerHandlerHeaders.mockClear();
     });
 
     describe("fromController method", () => {
@@ -78,6 +83,32 @@ describe("ConnectionFactory", () => {
             });
             await expect(ConnectionFactory.fromController("localhost:9000")).rejects.toThrowError("status code: 500");
         });
+
+        it("should use a custom HttpClient when one is provided", async () => {
+            const httpClient = mock<HttpClient>();
+            httpClient.get.mockResolvedValueOnce({
+                status: 200,
+                data: { baseballStats: [{ port: 8000, host: "localhost", instanceName: "Broker_172.17.0.2_8000" }] },
+            });
+            httpClient.post.mockResolvedValueOnce({
+                status: 200,
+                data: {
+                    resultTable: {
+                        dataSchema: { columnNames: ["league", "hits"], columnDataTypes: ["STRING", "DOUBLE"] },
+                        rows: [["NL", 1890198.0]],
+                    },
+                    exceptions: [],
+                },
+            });
+            const c = await ConnectionFactory.fromController("localhost:9000", {
+                customHttpClient: httpClient,
+                brokerUpdateFreqMs: 10000,
+            });
+            await c.execute("baseballStats", "query");
+            await c.close();
+            expect(httpClient.get).toHaveBeenCalledTimes(1);
+            expect(httpClient.post).toHaveBeenCalledTimes(1);
+        });
     });
     describe("fromHostList method", () => {
         it("should throw an error if no brokers are provided", () => {
@@ -106,6 +137,26 @@ describe("ConnectionFactory", () => {
             );
             expect(brokerHandlerHeaders).toHaveBeenCalledTimes(1);
             expect(brokerHandlerHeaders.mock.calls[0][0]["custom-header"]).toEqual("custom-value");
+        });
+        it("should use a custom HttpClient when one is provided", async () => {
+            const httpClient = mock<HttpClient>();
+            httpClient.post.mockResolvedValueOnce({
+                status: 200,
+                data: {
+                    resultTable: {
+                        dataSchema: { columnNames: ["league", "hits"], columnDataTypes: ["STRING", "DOUBLE"] },
+                        rows: [["NL", 1890198.0]],
+                    },
+                    exceptions: [],
+                },
+            });
+            const c = await ConnectionFactory.fromHostList(["localhost:9000"], {
+                customHttpClient: httpClient,
+            });
+            await c.execute("baseballStats", "query");
+            await c.close();
+            expect(httpClient.get).toHaveBeenCalledTimes(0);
+            expect(httpClient.post).toHaveBeenCalledTimes(1);
         });
     });
 });

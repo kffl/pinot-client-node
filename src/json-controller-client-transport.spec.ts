@@ -1,17 +1,18 @@
-import { AxiosError } from "axios";
+import { mock, mockClear } from "jest-mock-extended";
+import { HttpClient } from "./http-client.interface";
 import { JsonControllerClientTransport } from "./json-controller-client-transport";
 
 describe("JsonControllerClientTransport class", () => {
-    const mockHttpGetFn = jest.fn();
+    const mockHttpClient = mock<HttpClient>();
     beforeEach(() => {
-        mockHttpGetFn.mockClear();
+        mockClear(mockHttpClient);
     });
-    it("should call the HttpGetFn", async () => {
-        mockHttpGetFn.mockResolvedValueOnce({ data: {} });
-        const transport = new JsonControllerClientTransport("controller:9000", mockHttpGetFn, {});
+    it("should call the HttpClient get method", async () => {
+        mockHttpClient.get.mockResolvedValueOnce({ data: {}, status: 200 });
+        const transport = new JsonControllerClientTransport("controller:9000", mockHttpClient, {});
         const r = await transport.getTableToBrokerMapping();
-        expect(mockHttpGetFn).toHaveBeenCalledTimes(1);
-        expect(mockHttpGetFn).toHaveBeenCalledWith("http://controller:9000/v2/brokers/tables?state=ONLINE", {
+        expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.get).toHaveBeenCalledWith("http://controller:9000/v2/brokers/tables?state=ONLINE", {
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
             },
@@ -19,11 +20,11 @@ describe("JsonControllerClientTransport class", () => {
         expect(r).toEqual({});
     });
     it("should add custom request headers", async () => {
-        mockHttpGetFn.mockResolvedValueOnce({ data: {} });
-        const transport = new JsonControllerClientTransport("controller:9000", mockHttpGetFn, { key: "val" });
+        mockHttpClient.get.mockResolvedValueOnce({ data: {}, status: 200 });
+        const transport = new JsonControllerClientTransport("controller:9000", mockHttpClient, { key: "val" });
         const r = await transport.getTableToBrokerMapping();
-        expect(mockHttpGetFn).toHaveBeenCalledTimes(1);
-        expect(mockHttpGetFn).toHaveBeenCalledWith("http://controller:9000/v2/brokers/tables?state=ONLINE", {
+        expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.get).toHaveBeenCalledWith("http://controller:9000/v2/brokers/tables?state=ONLINE", {
             headers: {
                 key: "val",
                 "Content-Type": "application/json; charset=utf-8",
@@ -32,16 +33,15 @@ describe("JsonControllerClientTransport class", () => {
         expect(r).toEqual({});
     });
     it("should throw an error with status code on HTTP error", async () => {
-        const errWithResponse = new AxiosError("message");
-        errWithResponse.response = { status: 503, data: {}, headers: {}, statusText: "", config: {} };
-        mockHttpGetFn.mockRejectedValueOnce(errWithResponse);
-        const transport = new JsonControllerClientTransport("addr:9000", mockHttpGetFn, {});
+        const response = { status: 503, data: {} };
+        mockHttpClient.get.mockResolvedValueOnce(response);
+        const transport = new JsonControllerClientTransport("addr:9000", mockHttpClient, {});
         await expect(transport.getTableToBrokerMapping()).rejects.toThrowError("503");
     });
     it("should throw an error with message on other errors", async () => {
-        const errWithMessage = new AxiosError("sample message");
-        mockHttpGetFn.mockRejectedValueOnce(errWithMessage);
-        const transport = new JsonControllerClientTransport("addr:9000", mockHttpGetFn, {});
+        const errWithMessage = new Error("sample message");
+        mockHttpClient.get.mockRejectedValueOnce(errWithMessage);
+        const transport = new JsonControllerClientTransport("addr:9000", mockHttpClient, {});
         await expect(transport.getTableToBrokerMapping()).rejects.toThrowError("sample message");
     });
 });
