@@ -8,11 +8,8 @@ describe("ConnectionFactory", () => {
     let controllerTestServer;
     const controllerHandlerHeaders = jest.fn();
 
-    beforeEach(async () => {
-        brokerHandlerBody.mockClear();
-        brokerHandlerHeaders.mockClear();
-        controllerHandlerHeaders.mockClear();
-        brokerTestServer = fastify();
+    beforeAll(async () => {
+        brokerTestServer = fastify({ forceCloseConnections: true });
         brokerTestServer.post("/query/sql", (req, res) => {
             brokerHandlerBody(req.body);
             brokerHandlerHeaders(req.headers);
@@ -23,7 +20,7 @@ describe("ConnectionFactory", () => {
         });
         await brokerTestServer.listen(8000, "0.0.0.0");
 
-        controllerTestServer = fastify();
+        controllerTestServer = fastify({ forceCloseConnections: true });
         controllerTestServer.get("/v2/brokers/tables", (req, res) => {
             controllerHandlerHeaders(req.headers);
             const r = Buffer.from(
@@ -34,9 +31,15 @@ describe("ConnectionFactory", () => {
         await controllerTestServer.listen(9000, "0.0.0.0");
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await brokerTestServer.close();
         await controllerTestServer.close();
+    });
+
+    beforeEach(async () => {
+        brokerHandlerBody.mockClear();
+        brokerHandlerHeaders.mockClear();
+        controllerHandlerHeaders.mockClear();
     });
 
     describe("fromController method", () => {

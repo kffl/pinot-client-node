@@ -3,7 +3,7 @@ import { ControllerResponse } from "./controller-response";
 import { PinotClientError } from "./pinot-client-error";
 import { withProtocol } from "./url";
 
-export type HttpGetFn<T> = (
+export type HttpGetFn = <T>(
     url: string,
     options: {
         headers: Record<string, string>;
@@ -13,12 +13,12 @@ export type HttpGetFn<T> = (
 export class JsonControllerClientTransport implements ControllerClientTransport {
     constructor(
         private readonly controllerAddress: string,
-        private readonly httpGet: HttpGetFn<ControllerResponse>,
+        private readonly httpGet: HttpGetFn,
         private readonly reqHeaders: Record<string, string>
     ) {}
     public async getTableToBrokerMapping() {
         try {
-            const { data } = await this.httpGet(
+            const { data, status } = await this.httpGet<ControllerResponse>(
                 withProtocol(this.controllerAddress) + "/v2/brokers/tables?state=ONLINE",
                 {
                     headers: {
@@ -27,13 +27,12 @@ export class JsonControllerClientTransport implements ControllerClientTransport 
                     },
                 }
             );
+            if (status !== 200) {
+                throw new PinotClientError("Controller responded with HTTP status code: " + status);
+            }
             return data;
         } catch (e) {
-            if (e.response) {
-                throw new PinotClientError("Controller responded with HTTP status code: " + e.response.status);
-            } else {
-                throw new PinotClientError("An error occurred when sending request to the controller: " + e.message);
-            }
+            throw new PinotClientError("An error occurred when sending request to the controller: " + e.message);
         }
     }
 }
