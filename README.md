@@ -7,6 +7,8 @@
 
 JavaScript client library for connecting to and querying Apache Pinot :wine_glass:, a realtime distributed OLAP datastore.
 
+[GitHub Repo](https://github.com/kffl/pinot-client-node), [TypeDoc Reference](https://kffl.github.io/pinot-client-node/), [npm Package](https://www.npmjs.com/package/pinot-client)
+
 ## Features
 
 -   Implements a controller-based broker selector that periodically updates the table-to-broker mapping via the controller API.
@@ -92,6 +94,7 @@ UA      7457
 
 -   `logger`: a logger instance conforming to the standard Log4j interface w/ .child() method (i.e. pino, winston or log4js)
 -   `brokerReqHeaders`: additional HTTP headers (object key: value) to include in broker query API requests
+-   `customHttpClient`: a custom HTTP client implementation
 
 on top of that, `ConnectionFactory.fromController()` options may include two additional keys:
 
@@ -128,4 +131,31 @@ const options = {
 };
 
 const connection = await ConnectionFactory.fromController("localhost:9000", options);
+```
+
+### Using a custom HTTP client
+
+By default `pinot-client` uses `undici` for performing HTTP requests against Pinot Borkers and Controllers. A custom `HttpClient` interface implementation (containing POST and GET methods) can be provided instead via the `customHttpClient` options key:
+
+```typescript
+
+const myClient: HttpClient = {
+    get: async function <T>(url: string, options: { headers: Record<string, string> }) {
+        const { statusCode, parsedBody } = await otherHTTPClientLib<T>(url, ...);
+        // data is of type T
+        return { status: statusCode, data: parsedBody };
+    },
+    post: async function <T>(url: string, data: object, options: { headers: Record<string, string> }) {
+        const { statusCode, parsedBody } = await otherHTTPClientLib<T>(url, ...);
+        // data is of type T
+        return { status: statusCode, data: parsedBody };
+    },
+};
+
+const options = {
+    customHttpClient: myClient,
+}
+
+const c = await ConnectionFactory.fromController("http://localhost:9000", options);
+
 ```
