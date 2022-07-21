@@ -1,6 +1,6 @@
 {
     "name": "pinot-client",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Node.js client for Apache Pinot",
     "main": "dist/index.js",
     "types": "dist/index.d.js",
