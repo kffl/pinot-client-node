@@ -1,24 +1,18 @@
 import { ControllerClientTransport } from "./controller-client-transport.interface";
 import { ControllerResponse } from "./controller-response";
+import { HttpClient } from "./http-client.interface";
 import { PinotClientError } from "./pinot-client-error";
 import { withProtocol } from "./url";
-
-export type HttpGetFn = <T>(
-    url: string,
-    options: {
-        headers: Record<string, string>;
-    }
-) => Promise<{ data: T; status: number }>;
 
 export class JsonControllerClientTransport implements ControllerClientTransport {
     constructor(
         private readonly controllerAddress: string,
-        private readonly httpGet: HttpGetFn,
+        private readonly client: HttpClient,
         private readonly reqHeaders: Record<string, string>
     ) {}
     public async getTableToBrokerMapping() {
         try {
-            const { data, status } = await this.httpGet<ControllerResponse>(
+            const { data, status } = await this.client.get<ControllerResponse>(
                 withProtocol(this.controllerAddress) + "/v2/brokers/tables?state=ONLINE",
                 {
                     headers: {
